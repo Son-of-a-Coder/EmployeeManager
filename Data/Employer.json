@@ -2,16 +2,19 @@
   {
     "EmployerID": 1,
     "EmployerName": "Ivan Ivić",
-    "DepartmentId": 1
+    "DepartmentId": 1,
+    "SkillID": 1
   },
   {
     "EmployerID": 2,
     "EmployerName": "Ana Anić",
-    "DepartmentId": 4
+    "DepartmentId": 4,
+    "SkillID": 8
   },
   {
     "EmployerID": 3,
     "EmployerName": "Davor Davorić",
-    "DepartmentId": 3
+    "DepartmentId": 3,
+    "SkillID": 3
   }
 ]

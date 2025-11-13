@@ -1,0 +1,41 @@
+@using EmployeeManager.Models
+@model Employee
+
+@{
+    // index is provided via ViewData["index"] and may be an int or the placeholder string
+    var idx = ViewData["index"]?.ToString() ?? "0";
+    var originalPrefix = ViewData.TemplateInfo.HtmlFieldPrefix;
+    ViewData.TemplateInfo.HtmlFieldPrefix = $"employees[{idx}]";
+}
+
+<tr data-employee-row="true">
+    <td>
+        @Html.HiddenFor(m => m.Id)
+        <input asp-for="FullName" class="form-control" />
+        @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+    </td>
+    <td>
+        <select asp-for="DepartmentId" class="form-select">
+            <option value="">-- select --</option>
+            @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>(); }
+            @foreach (var d in depts)
+            {
+                <option value="@d.Id" selected="@((Model != null && Model.DepartmentId == d.Id) ? "selected" : null)">@d.Name</option>
+            }
+        </select>
+        @Html.ValidationMessageFor(m => m.DepartmentId, "", new { @class = "text-danger" })
+    </td>
+    <td>
+        <input asp-for="Skill" class="form-control skill" list="skills-list" />
+        @Html.ValidationMessageFor(m => m.Skill, "", new { @class = "text-danger" })
+    </td>
+    <td>
+        <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="@Model.Id">Edit</button>
+        <button class="btn btn-sm btn-danger delete-btn" data-id="@Model.Id">Delete</button>
+    </td>
+</tr>
+
+@{
+    // restore original prefix to avoid affecting parent view
+    ViewData.TemplateInfo.HtmlFieldPrefix = originalPrefix;
+}
