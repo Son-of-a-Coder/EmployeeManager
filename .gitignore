@@ -1,0 +1,15 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/DemoWebMvc/CopilotIndices/17.14.878.3237
+/.vs/DemoWebMvc/DesignTimeBuild
+/.vs/DemoWebMvc/FileContentIndex
+/.vs/DemoWebMvc/v17
+/.vs/EmployeeManager/FileContentIndex
+/.vs/EmployeeManager/v17
+/.vs/ProjectEvaluation
+/bin/Debug/net8.0
+/obj
+/.vs/DemoWebMvc/config
+/.vs
