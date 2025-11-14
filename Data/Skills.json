@@ -1,12 +1,42 @@
 [
-  { "SkillID": 1, "SkillName": "C#" },
-  { "SkillID": 2, "SkillName": "ASP.NET Core" },
-  { "SkillID": 3, "SkillName": "JavaScript" },
-  { "SkillID": 4, "SkillName": "TypeScript" },
-  { "SkillID": 5, "SkillName": "SQL" },
-  { "SkillID": 6, "SkillName": "Negotiation" },
-  { "SkillID": 7, "SkillName": "Recruiting" },
-  { "SkillID": 8, "SkillName": "Project Management" },
-  { "SkillID": 9, "SkillName": "Design" },
-  { "SkillID": 10, "SkillName": "Testing" }
+  {
+    "SkillID": 1,
+    "SkillName": "C#"
+  },
+  {
+    "SkillID": 2,
+    "SkillName": "ASP.NET Core"
+  },
+  {
+    "SkillID": 3,
+    "SkillName": "JavaScript"
+  },
+  {
+    "SkillID": 4,
+    "SkillName": "TypeScript"
+  },
+  {
+    "SkillID": 5,
+    "SkillName": "SQL"
+  },
+  {
+    "SkillID": 6,
+    "SkillName": "Negotiation"
+  },
+  {
+    "SkillID": 7,
+    "SkillName": "Recruiting"
+  },
+  {
+    "SkillID": 8,
+    "SkillName": "Project Management"
+  },
+  {
+    "SkillID": 9,
+    "SkillName": "Design"
+  },
+  {
+    "SkillID": 10,
+    "SkillName": "Testing"
+  }
 ]

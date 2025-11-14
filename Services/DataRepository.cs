@@ -35,10 +35,10 @@ namespace EmployeeManager.Services
 
         public void SaveEmployees()
         {
-            // Serialize current Employees list back to Data/Employer.json
+            // Serialize current Employees list back to Data/Employee.json
             var dataDir = Path.Combine(_env.ContentRootPath ?? Directory.GetCurrentDirectory(), "Data");
             Directory.CreateDirectory(dataDir);
-            var empPath = Path.Combine(dataDir, "Employer.json");
+            var empPath = Path.Combine(dataDir, "Employee.json");
 
             // Map to the original Employer.json shape, include Skill if present
             var outList = Employees.Select(e =>
@@ -85,6 +85,81 @@ namespace EmployeeManager.Services
                 File.WriteAllText(tmp, json);
                 File.Copy(tmp, skillsPath, true);
                 File.Delete(tmp);
+            }
+        }
+        /// <summary>
+        /// Append a single employee to the repository and persist employees and skills atomically.
+        /// Returns the persisted employee (with assigned Id and normalized Skill value).
+        /// </summary>
+        public Employee AppendEmployee(Employee emp)
+        {
+            if (emp == null) throw new ArgumentNullException(nameof(emp));
+            lock (_lock)
+            {
+                // ensure department is kept as provided (validation occurs higher)
+                // ensure skill exists (case-insensitive); do NOT create new skills here
+                var skillName = (emp.Skill ?? string.Empty).Trim();
+                if (!string.IsNullOrEmpty(skillName))
+                {
+                    var existing = Skills.FirstOrDefault(s => string.Equals(s.Name, skillName, StringComparison.OrdinalIgnoreCase));
+                    if (existing != null)
+                    {
+                        // normalize to repository's canonical casing
+                        skillName = existing.Name ?? skillName;
+                        emp.Skill = skillName;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Skill does not exist");
+                    }
+                }
+
+                // assign id
+                if (emp.Id <= 0)
+                {
+                    emp.Id = _nextId++;
+                }
+                // add to list
+                Employees.Add(new Employee { Id = emp.Id, FullName = emp.FullName, DepartmentId = emp.DepartmentId, Skill = emp.Skill });
+
+                // persist
+                SaveEmployees();
+                SaveSkills();
+
+                // return a copy
+                return new Employee { Id = emp.Id, FullName = emp.FullName, DepartmentId = emp.DepartmentId, Skill = emp.Skill };
+            }
+        }
+
+        /// <summary>
+        /// Update an existing employee in-memory and persist changes.
+        /// </summary>
+        public Employee UpdateEmployee(Employee emp)
+        {
+            if (emp == null) throw new ArgumentNullException(nameof(emp));
+            lock (_lock)
+            {
+                var existing = Employees.FirstOrDefault(e => e.Id == emp.Id);
+                if (existing == null) throw new InvalidOperationException("Employee not found");
+
+                // ensure skill exists
+                var skillName = (emp.Skill ?? string.Empty).Trim();
+                if (!string.IsNullOrEmpty(skillName))
+                {
+                    var sk = Skills.FirstOrDefault(s => string.Equals(s.Name, skillName, StringComparison.OrdinalIgnoreCase));
+                    if (sk == null) throw new InvalidOperationException("Skill does not exist");
+                    skillName = sk.Name ?? skillName;
+                }
+
+                // update
+                existing.FullName = emp.FullName;
+                existing.DepartmentId = emp.DepartmentId;
+                existing.Skill = emp.Skill;
+
+                // persist
+                SaveEmployees();
+
+                return new Employee { Id = existing.Id, FullName = existing.FullName, DepartmentId = existing.DepartmentId, Skill = existing.Skill };
             }
         }
         private void Load()
@@ -187,9 +262,26 @@ namespace EmployeeManager.Services
 
         private void LoadEmployees(string dataDir)
         {
-            var empPath = Path.Combine(dataDir, "Employer.json");
-            if (!File.Exists(empPath)) return;
-            var empJson = File.ReadAllText(empPath);
+            var empPathNew = Path.Combine(dataDir, "Employee.json");
+            var empPathLegacy = Path.Combine(dataDir, "Employer.json");
+
+            // Migration: if new file missing but legacy exists, copy it to new path (and keep a backup)
+            if (!File.Exists(empPathNew) && File.Exists(empPathLegacy))
+            {
+                try
+                {
+                    var bak = empPathLegacy + ".bak";
+                    if (!File.Exists(bak)) File.Copy(empPathLegacy, bak);
+                    File.Copy(empPathLegacy, empPathNew, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Warning: failed to migrate employer->employee json: {ex.Message}");
+                }
+            }
+
+            if (!File.Exists(empPathNew)) return;
+            var empJson = File.ReadAllText(empPathNew);
             var emps = JsonSerializer.Deserialize<List<JsonElement>>(empJson) ?? new List<JsonElement>();
             Employees.Clear();
             foreach (var e in emps)

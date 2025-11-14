@@ -1,0 +1,100 @@
+[
+  {
+    "EmployerID": 1,
+    "EmployerName": "Ivan Ivi\u0107",
+    "DepartmentId": 1,
+    "SkillID": 2,
+    "Skill": "ASP.NET Core"
+  },
+  {
+    "EmployerID": 2,
+    "EmployerName": "Ana Ani\u0107",
+    "DepartmentId": 4,
+    "SkillID": 8,
+    "Skill": "Project Management"
+  },
+  {
+    "EmployerID": 3,
+    "EmployerName": "Davor Davori\u0107",
+    "DepartmentId": 3,
+    "SkillID": 3,
+    "Skill": "JavaScript"
+  },
+  {
+    "EmployerID": 4,
+    "EmployerName": "aaaaaaaa",
+    "DepartmentId": 2,
+    "SkillID": 2,
+    "Skill": "ASP.NET Core"
+  },
+  {
+    "EmployerID": 5,
+    "EmployerName": "Ivan Ivi\u0107",
+    "DepartmentId": 3,
+    "SkillID": 3,
+    "Skill": "JavaScript"
+  },
+  {
+    "EmployerID": 6,
+    "EmployerName": "adada",
+    "DepartmentId": 3,
+    "SkillID": 9,
+    "Skill": "Design"
+  },
+  {
+    "EmployerID": 7,
+    "EmployerName": "dddddd",
+    "DepartmentId": 4,
+    "SkillID": 2,
+    "Skill": "ASP.NET Core"
+  },
+  {
+    "EmployerID": 8,
+    "EmployerName": "dadada",
+    "DepartmentId": 4,
+    "SkillID": 10,
+    "Skill": "Testing"
+  },
+  {
+    "EmployerID": 9,
+    "EmployerName": "kkkkkkkk",
+    "DepartmentId": 4,
+    "SkillID": 10,
+    "Skill": "Testing"
+  },
+  {
+    "EmployerID": 10,
+    "EmployerName": "uuuuu",
+    "DepartmentId": 4,
+    "SkillID": 5,
+    "Skill": "SQL"
+  },
+  {
+    "EmployerID": 11,
+    "EmployerName": "deeererere",
+    "DepartmentId": 4,
+    "SkillID": 10,
+    "Skill": "Testing"
+  },
+  {
+    "EmployerID": 12,
+    "EmployerName": "deeererere",
+    "DepartmentId": 4,
+    "SkillID": 10,
+    "Skill": "Testing"
+  },
+  {
+    "EmployerID": 13,
+    "EmployerName": "popopopoop",
+    "DepartmentId": 3,
+    "SkillID": 5,
+    "Skill": "SQL"
+  },
+  {
+    "EmployerID": 14,
+    "EmployerName": "popopopoop",
+    "DepartmentId": 3,
+    "SkillID": 5,
+    "Skill": "SQL"
+  }
+]

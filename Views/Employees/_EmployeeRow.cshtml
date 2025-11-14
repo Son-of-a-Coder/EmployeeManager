@@ -11,23 +11,19 @@
 <tr data-employee-row="true">
     <td>
         @Html.HiddenFor(m => m.Id)
-        <input asp-for="FullName" class="form-control" />
-        @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+        @* Hidden inputs for posting via SaveAll; visible display is a simple span *@
+        @Html.HiddenFor(m => m.FullName)
+        <div class="form-control-plaintext fullName">@Html.DisplayFor(m => m.FullName)</div>
     </td>
     <td>
-        <select asp-for="DepartmentId" class="form-select">
-            <option value="">-- select --</option>
-            @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>(); }
-            @foreach (var d in depts)
-            {
-                <option value="@d.Id" selected="@((Model != null && Model.DepartmentId == d.Id) ? "selected" : null)">@d.Name</option>
-            }
-        </select>
-        @Html.ValidationMessageFor(m => m.DepartmentId, "", new { @class = "text-danger" })
+        @Html.HiddenFor(m => m.DepartmentId)
+        @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>();
+           var deptName = depts.FirstOrDefault(d => d.Id == Model.DepartmentId)?.Name ?? string.Empty; }
+        <div class="form-control-plaintext departmentName">@deptName</div>
     </td>
     <td>
-        <input asp-for="Skill" class="form-control skill" list="skills-list" />
-        @Html.ValidationMessageFor(m => m.Skill, "", new { @class = "text-danger" })
+        @Html.HiddenFor(m => m.Skill)
+        <div class="form-control-plaintext skillValue">@Html.DisplayFor(m => m.Skill)</div>
     </td>
     <td>
         <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="@Model.Id">Edit</button>

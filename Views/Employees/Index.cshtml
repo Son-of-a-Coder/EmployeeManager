@@ -43,8 +43,29 @@
 
 <!-- Server-rendered template for new row (kept as raw HTML inside a script/template so the browser doesn't reparent table row markup) -->
 <script id="new-row-template" type="text/html">
-    @{ var vt = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData) { ["index"] = "__INDEX__" }; }
-    @await Html.PartialAsync("_EmployeeRow", new EmployeeManager.Models.Employee(), vt)
+    <tr>
+        <td>
+            <input type="hidden" name="employees[__INDEX__].Id" value="0" />
+            <input type="text" name="employees[__INDEX__].FullName" class="form-control" />
+        </td>
+        <td>
+            <select name="employees[__INDEX__].DepartmentId" class="form-select">
+                <option value="">-- select --</option>
+                @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>(); }
+                @foreach (var d in depts)
+                {
+                    <option value="@d.Id">@d.Name</option>
+                }
+            </select>
+        </td>
+        <td>
+            <input type="text" name="employees[__INDEX__].Skill" class="form-control skill" list="skills-list" />
+        </td>
+        <td>
+            <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="0">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="0">Delete</button>
+        </td>
+    </tr>
 </script>
 
 @* Shared datalist for skills; inputs reference this list via `list="skills-list"` *@
@@ -98,5 +119,8 @@
 </div>
 
 @section Scripts {
+    <!-- jQuery UI (Autocomplete) via CDN; falls back to custom typeahead if unavailable -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-xNjb53/rY+Y0vY6b0a0a0mYQv0vGqZ1s4f2b5FQ5fVg=" crossorigin="anonymous"></script>
     <script src="~/js/employees.js" asp-append-version="true"></script>
 }

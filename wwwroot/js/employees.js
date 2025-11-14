@@ -184,19 +184,65 @@ $(function () {
             }
         });
 
-        // Add new row
+        // Add new row (inline) — insert an empty row at the bottom for immediate editing and persist via AJAX when filled
         var nextIndex = $('#employees-body tr').length;
-        // Open modal to add a new employee instead of inserting inline
-            $('#add-employee').on('click', function (e) {
+        $('#add-employee').on('click', function (e) {
             e.preventDefault();
-            // clear modal inputs
-            $('#modalFullName').val('').removeClass('is-invalid');
-            $('#modalDepartment').val($('#employees-body tr:first select[name$=".DepartmentId"]').val() || '');
-            $('#modalSkill').val('').removeClass('is-invalid');
-            var modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
-            // mark modal as adding (no editing index)
-            $('#addEmployeeModal').data('editingIndex', null);
-            modal.show();
+            var idx = nextIndex++;
+            var tpl = $('#new-row-template').html();
+            tpl = tpl.replace(/__INDEX__/g, idx);
+            var $row = $('<tbody>').append(tpl).find('tr').first();
+            $row.find('[name="employees[' + idx + '].FullName"]').val('');
+            $row.find('[name="employees[' + idx + '].DepartmentId"]').val('');
+            $row.find('[name="employees[' + idx + '].Skill"]').val('');
+            $('#employees-body').append($row);
+            reindexRows();
+            $('#employees-body tr').last().find('[name$=".FullName"]').focus();
+
+            // Listen for changes to persist new row when all fields are filled
+            $row.on('change blur', 'input, select', function () {
+                var fullName = $row.find('[name$=".FullName"]').val();
+                var dept = $row.find('[name$=".DepartmentId"]').val();
+                var skill = $row.find('[name$=".Skill"]').val();
+                if (!fullName || !String(fullName).trim()) return;
+                if (!dept || !String(dept).trim()) return;
+                if (!skill || !String(skill).trim()) return;
+                // Only persist if not already saved
+                if ($row.data('persisted')) return;
+                var afToken = $('input[name="__RequestVerificationToken"]').val();
+                var payload = { FullName: String(fullName).trim(), DepartmentId: parseInt(dept), Skill: String(skill).trim() };
+                $.ajax({
+                    url: '/Employees/Add',
+                    method: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    headers: { 'RequestVerificationToken': afToken },
+                    data: JSON.stringify(payload),
+                    success: function (resp) {
+                        if (resp && resp.success && resp.employee) {
+                            // Fetch the rendered read-only row from the server
+                            $.get('/Employees/RowPartial', { id: resp.employee.Id }, function(html) {
+                                $row.replaceWith(html);
+                                reindexRows();
+                                refreshAllSkills();
+                            });
+                        } else if (resp && resp.errors) {
+                            // Show validation errors inline
+                            var errors = resp.errors;
+                            $row.find('.invalid-feedback').remove();
+                            if (Array.isArray(errors)) {
+                                errors.forEach(function(msg) {
+                                    $row.find('td').last().append('<div class="invalid-feedback d-block">' + msg + '</div>');
+                                });
+                            }
+                        } else if (resp && resp.message) {
+                            alert('Add failed: ' + resp.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        try { var json = xhr && xhr.responseJSON; if (json && json.message) alert('Add failed: ' + json.message); else if (json && json.errors) alert('Add failed: ' + (json.errors || []).join('\n')); else alert('Failed to add'); } catch (e) { alert('Failed to add'); }
+                    }
+                });
+            });
         });
 
         // When modal is shown, hide the underlying table to avoid native selects from the table
@@ -208,85 +254,161 @@ $(function () {
             $('#employees-body').closest('.table-responsive').css('visibility', 'visible');
         });
 
-        // Handle modal submit: validate and insert new row using server template
-        $('#addEmployeeForm').on('submit', function (e) {
+        // (old edit handler removed) the delegated edit handler below handles modal-based editing of persisted rows
+
+        // Initialize typeahead for skill inputs
+        bindSkillAutocomplete();
+
+        // If jQuery UI Autocomplete is available, initialize it as a richer autocomplete control.
+        // This will act as the primary autocomplete; our custom typeahead remains as fallback.
+        $(document).on('focus', '.skill', function () {
+            var $input = $(this);
+            if ($.ui && $.ui.autocomplete && !$input.data('ui-autocomplete')) {
+                $input.autocomplete({
+                    source: function (request, response) {
+                        $.get('/Employees/GetSkills', { q: request.term }).done(function (data) {
+                            response(data || []);
+                        }).fail(function () { response([]); });
+                    },
+                    minLength: 0,
+                    delay: 150,
+                    select: function (event, ui) {
+                        $input.val(ui.item.value).trigger('input');
+                        return false;
+                    }
+                }).on('keydown', function (e) {
+                    // allow Enter to select suggestion
+                    if (e.key === 'Enter') { e.stopPropagation(); }
+                });
+            }
+        });
+
+        // Editing is done via modal. Remove auto-save behavior and instead handle modal submit
+        // Restore modal-based Add/Edit: open modal for add or edit, submit via AJAX to Add/Update endpoints
+        // Restore inline add-row: clicking '+ Add Employee' inserts a new editable row at the bottom
+        var nextIndex = $('#employees-body tr').length;
+        $('#add-employee').off('click').on('click', function (e) {
+            e.preventDefault();
+            var idx = nextIndex++;
+            var tpl = $('#new-row-template').html();
+            tpl = tpl.replace(/__INDEX__/g, idx);
+            var $row = $('<tbody>').append(tpl).find('tr').first();
+            $row.find('[name="employees[' + idx + '].FullName"]').val('');
+            $row.find('[name="employees[' + idx + '].DepartmentId"]').val('');
+            $row.find('[name="employees[' + idx + '].Skill"]').val('');
+            $('#employees-body').append($row);
+            reindexRows();
+            $('#employees-body tr').last().find('[name$=".FullName"]').focus();
+
+            // Listen for changes to persist new row when all fields are filled
+            $row.on('change blur', 'input, select', function () {
+                var fullName = $row.find('[name$=".FullName"]').val();
+                var dept = $row.find('[name$=".DepartmentId"]').val();
+                var skill = $row.find('[name$=".Skill"]').val();
+                if (!fullName || !String(fullName).trim()) return;
+                if (!dept || !String(dept).trim()) return;
+                if (!skill || !String(skill).trim()) return;
+                // Only persist if not already saved
+                if ($row.data('persisted')) return;
+                var afToken = $('input[name="__RequestVerificationToken"]').val();
+                var payload = { FullName: String(fullName).trim(), DepartmentId: parseInt(dept), Skill: String(skill).trim() };
+                $.ajax({
+                    url: '/Employees/Add',
+                    method: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    headers: { 'RequestVerificationToken': afToken },
+                    data: JSON.stringify(payload),
+                    success: function (resp) {
+                        if (resp && resp.success && resp.employee) {
+                            // update row to read-only and set id
+                            $row.find('input[type="hidden"][name$=".Id"]').val(resp.employee.Id);
+                            $row.find('[name$=".FullName"]').prop('readonly', true);
+                            $row.find('[name$=".DepartmentId"]').prop('disabled', true);
+                            $row.find('[name$=".Skill"]').prop('readonly', true);
+                            $row.find('.edit-btn, .delete-btn').attr('data-id', resp.employee.Id);
+                            $row.data('persisted', true);
+                            refreshAllSkills();
+                        } else if (resp && resp.message) {
+                            alert('Add failed: ' + resp.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        try { var json = xhr && xhr.responseJSON; if (json && json.message) alert('Add failed: ' + json.message); else if (json && json.errors) alert('Add failed: ' + (json.errors || []).join('\n')); else alert('Failed to add'); } catch (e) { alert('Failed to add'); }
+                    }
+                });
+            });
+        });
+
+        // Edit button: open modal and populate fields from the row
+        $(document).off('click', '.edit-btn').on('click', '.edit-btn', function (e) {
+            e.preventDefault();
+            var id = parseInt($(this).attr('data-id') || '0');
+            if (!id) return;
+            var $row = $(this).closest('tr[data-employee-row]');
+            var fullName = $row.find('.fullName').text().trim();
+            var deptName = $row.find('.departmentName').text().trim();
+            var skill = $row.find('.skillValue').text().trim();
+            // find dept id from name
+            var deptId = $('#modalDepartment option').filter(function () { return $(this).text().trim() === deptName; }).val() || '';
+            $('#modalFullName').val(fullName).removeClass('is-invalid');
+            $('#modalDepartment').val(deptId);
+            $('#modalSkill').val(skill).removeClass('is-invalid');
+            $('#addEmployeeModal').data('editingId', id);
+            var modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+            modal.show();
+        });
+
+        // Modal submit now performs Update via AJAX (modal is only used for editing persisted rows)
+        $('#addEmployeeForm').off('submit').on('submit', function (e) {
             e.preventDefault();
             var fullName = $('#modalFullName').val();
             var dept = $('#modalDepartment').val();
             var skill = $('#modalSkill').val();
             var ok = true;
-            if (!fullName || !String(fullName).trim()) {
-                ok = false;
-                $('#modalFullName').addClass('is-invalid');
-            } else {
-                $('#modalFullName').removeClass('is-invalid');
-            }
+            if (!fullName || !String(fullName).trim()) { ok = false; $('#modalFullName').addClass('is-invalid'); } else { $('#modalFullName').removeClass('is-invalid'); }
+            if (!dept || !String(dept).trim()) { ok = false; }
+            if (!skill || !String(skill).trim()) { ok = false; $('#modalSkill').addClass('is-invalid'); } else { $('#modalSkill').removeClass('is-invalid'); }
+            if (!ok) return;
 
-                // Ensure skill is non-empty; we allow new skills (they will be persisted server-side)
-                refreshAllSkills().done(function () {
-                    if (!skill || !String(skill).trim()) {
-                        ok = false;
-                        $('#modalSkill').addClass('is-invalid');
-                    } else {
-                        $('#modalSkill').removeClass('is-invalid');
-                    }
-
-                    if (!ok) return;
-
-                var editingIndex = $('#addEmployeeModal').data('editingIndex');
-                    if (editingIndex !== null && editingIndex !== undefined) {
-                    // update existing row
-                    var $row = $('#employees-body tr').eq(editingIndex);
-                    $row.find('input[type="hidden"]').val($row.find('input[type="hidden"]').val() || '0');
-                    $row.find('[name$=".FullName"]').val(fullName);
-                    $row.find('[name$=".DepartmentId"]').val(dept);
-                    $row.find('[name$=".Skill"]').val(skill);
-                    reindexRows();
-                } else {
-                    var idx = nextIndex++;
-                    var tpl = $('#new-row-template').html();
-                    tpl = tpl.replace(/__INDEX__/g, idx);
-                    // parse template into a proper table row to avoid browser reparenting
-                    var $row = $('<tbody>').append(tpl).find('tr').first();
-                    // set values into new row inputs
-                    $row.find('[name="employees[' + idx + '].FullName"]').val(fullName);
-                    $row.find('[name="employees[' + idx + '].DepartmentId"]').val(dept);
-                    $row.find('[name="employees[' + idx + '].Skill"]').val(skill);
-                    $('#employees-body').append($row);
-                    reindexRows();
-                }
-
-                // close modal
+            var editingId = $('#addEmployeeModal').data('editingId');
+            if (!editingId) {
+                // modal is used only for editing; if no editingId present, just close modal
                 var modalEl = document.getElementById('addEmployeeModal');
                 var modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) modalInstance.hide();
+                return;
+            }
+
+            var payload = { Id: editingId, FullName: String(fullName).trim(), DepartmentId: parseInt(dept), Skill: String(skill).trim() };
+            var afToken = $('input[name="__RequestVerificationToken"]').val();
+            $.ajax({
+                url: '/Employees/Update',
+                method: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                headers: { 'RequestVerificationToken': afToken },
+                data: JSON.stringify(payload),
+                success: function (resp) {
+                    if (resp && resp.success && resp.employee) {
+                        // update existing row
+                        var $row = $('#employees-body').find('.edit-btn[data-id="' + editingId + '"]').closest('tr');
+                        $row.find('input[type="hidden"][name$=".FullName"]').val(resp.employee.FullName);
+                        $row.find('.fullName').text(resp.employee.FullName);
+                        var deptName = $('#modalDepartment option:selected').text();
+                        $row.find('input[type="hidden"][name$=".DepartmentId"]').val(resp.employee.DepartmentId);
+                        $row.find('.departmentName').text(deptName);
+                        $row.find('input[type="hidden"][name$=".Skill"]').val(resp.employee.Skill);
+                        $row.find('.skillValue').text(resp.employee.Skill);
+                        refreshAllSkills();
+                        var modalEl = document.getElementById('addEmployeeModal');
+                        var modalInstance = bootstrap.Modal.getInstance(modalEl);
                         if (modalInstance) modalInstance.hide();
-                    }).fail(function () {
-                        // treat as invalid if we couldn't refresh allowed skills
-                        $('#modalSkill').addClass('is-invalid');
-                    });
+                    } else if (resp && resp.message) {
+                        alert('Save failed: ' + resp.message);
+                    }
+                },
+                error: function (xhr) { try { var json = xhr && xhr.responseJSON; if (json && json.message) alert('Save failed: ' + json.message); else if (json && json.errors) alert('Save failed: ' + (json.errors || []).join('\n')); else alert('Failed to save'); } catch (e) { alert('Failed to save'); } }
             });
-
-        // Edit button handler: open modal prefilled with row data
-        $(document).on('click', '.edit-btn', function (e) {
-            e.preventDefault();
-            var $btn = $(this);
-            var $row = $btn.closest('tr');
-            var idx = $row.index();
-            var id = $row.find('input[type="hidden"]').val();
-            var fullName = $row.find('[name$=".FullName"]').val();
-            var dept = $row.find('[name$=".DepartmentId"]').val();
-            var skill = $row.find('[name$=".Skill"]').val();
-            $('#modalFullName').val(fullName).removeClass('is-invalid');
-            $('#modalDepartment').val(dept);
-            $('#modalSkill').val(skill).removeClass('is-invalid');
-            // store editing index on modal
-            $('#addEmployeeModal').data('editingIndex', idx);
-            var modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
-            modal.show();
         });
-
-        // Initialize typeahead for skill inputs
-        bindSkillAutocomplete();
 
         // Ensure skill is non-empty before submit (allow new skills)
         $('form').on('submit', function (e) {
@@ -295,9 +417,10 @@ $(function () {
             // Make sure allowedSkills is fresh then validate
             refreshAllSkills().done(function () {
                 var ok = true;
+                var allowed = (window.allowedSkills || []).map(function(s) { return String(s).toLowerCase(); });
                 $('.skill').each(function () {
                     var v = $(this).val();
-                    if (!v || !String(v).trim()) {
+                    if (!v || !String(v).trim() || allowed.indexOf(String(v).toLowerCase()) === -1) {
                         ok = false;
                         $(this).addClass('is-invalid');
                     } else {
@@ -305,7 +428,7 @@ $(function () {
                     }
                 });
                 if (!ok) {
-                    alert('Please enter skills; new skills will be added automatically.');
+                    alert('Please select an existing skill from suggestions.');
                     return;
                 }
                 // all good — submit the form programmatically

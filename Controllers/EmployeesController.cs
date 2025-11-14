@@ -60,6 +60,97 @@ namespace EmployeeManager.Controllers
             return Json(new { success = true });
         }
 
+        /// <summary>
+        /// Append a single employee via JSON POST. This endpoint accepts a JSON body
+        /// with FullName, DepartmentId and Skill and returns the persisted employee.
+        /// This endpoint is intended for AJAX add-once operations.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Add([FromBody] Employee employee)
+        {
+            if (employee == null)
+            {
+                return BadRequest(new { success = false, message = "Invalid payload" });
+            }
+
+            // basic server-side validation
+            var context = new ValidationContext(employee);
+            var results = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(employee, context, results, true))
+            {
+                var errs = results.Select(r => r.ErrorMessage ?? "Invalid").ToArray();
+                return BadRequest(new { success = false, errors = errs });
+            }
+
+            if (string.IsNullOrWhiteSpace(employee.Skill))
+            {
+                return BadRequest(new { success = false, message = "Skill is required." });
+            }
+
+            if (!_repo.Departments.Any(d => d.Id == employee.DepartmentId))
+            {
+                return BadRequest(new { success = false, message = "Invalid department." });
+            }
+
+            // Ensure skill exists (no custom skills allowed)
+            if (!_repo.Skills.Any(s => string.Equals(s.Name, employee.Skill, System.StringComparison.OrdinalIgnoreCase)))
+            {
+                return BadRequest(new { success = false, message = "Please select an existing skill from suggestions." });
+            }
+
+            try
+            {
+                var added = _repo.AppendEmployee(new Employee { FullName = employee.FullName, DepartmentId = employee.DepartmentId, Skill = employee.Skill });
+                return Json(new { success = true, employee = added });
+            }
+            catch (InvalidOperationException ix)
+            {
+                return BadRequest(new { success = false, message = ix.Message });
+            }
+            catch
+            {
+                return StatusCode(500, new { success = false, message = "Failed to persist employee" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Update([FromBody] Employee employee)
+        {
+            if (employee == null || employee.Id <= 0)
+                return BadRequest(new { success = false, message = "Invalid payload" });
+
+            var context = new ValidationContext(employee);
+            var results = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(employee, context, results, true))
+            {
+                var errs = results.Select(r => r.ErrorMessage ?? "Invalid").ToArray();
+                return BadRequest(new { success = false, errors = errs });
+            }
+
+            if (string.IsNullOrWhiteSpace(employee.Skill))
+                return BadRequest(new { success = false, message = "Skill is required." });
+            if (!_repo.Skills.Any(s => string.Equals(s.Name, employee.Skill, StringComparison.OrdinalIgnoreCase)))
+                return BadRequest(new { success = false, message = "Please select an existing skill from suggestions." });
+            if (!_repo.Departments.Any(d => d.Id == employee.DepartmentId))
+                return BadRequest(new { success = false, message = "Invalid department." });
+
+            try
+            {
+                var updated = _repo.UpdateEmployee(new Employee { Id = employee.Id, FullName = employee.FullName, DepartmentId = employee.DepartmentId, Skill = employee.Skill });
+                return Json(new { success = true, employee = updated });
+            }
+            catch (InvalidOperationException ix)
+            {
+                return BadRequest(new { success = false, message = ix.Message });
+            }
+            catch
+            {
+                return StatusCode(500, new { success = false, message = "Failed to update employee" });
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult SaveAll(List<Employee> employees)
@@ -78,16 +169,14 @@ namespace EmployeeManager.Controllers
                     }
                 }
 
-                // Skill: required. If it's new, add it to the repository so it will be persisted.
+                // Skill: required and must be an existing skill (no custom input allowed)
                 if (string.IsNullOrWhiteSpace(emp.Skill))
                 {
                     ModelState.AddModelError($"employees[{i}].Skill", "Skill is required.");
                 }
                 else if (!_repo.Skills.Any(s => string.Equals(s.Name, emp.Skill, System.StringComparison.OrdinalIgnoreCase)))
                 {
-                    // Add new skill to in-memory list (will persist after save)
-                    var nextSkillId = _repo.Skills.Where(s => s.Id > 0).Select(s => s.Id).DefaultIfEmpty(0).Max() + 1;
-                    _repo.Skills.Add(new SkillItem { Id = nextSkillId, Name = emp.Skill });
+                    ModelState.AddModelError($"employees[{i}].Skill", "Please select an existing skill from suggestions.");
                 }
 
                 // DepartmentId must exist in departments list
