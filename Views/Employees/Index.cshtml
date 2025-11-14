@@ -8,6 +8,13 @@
 <h2>Employees</h2>
 
 <form asp-action="SaveAll" asp-controller="Employees" method="post">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
     @Html.AntiForgeryToken()
 
     <div class="table-responsive">

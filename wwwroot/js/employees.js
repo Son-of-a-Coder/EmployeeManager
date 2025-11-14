@@ -429,6 +429,8 @@ $(function () {
         $('form').on('submit', function (e) {
             var $form = $(this);
             e.preventDefault();
+            // Remove any previous success message
+            $('.alert-success').remove();
             // Make sure allowedSkills is fresh then validate
             refreshAllSkills().done(function () {
                 var ok = true;
@@ -458,9 +460,28 @@ $(function () {
                     });
                     return;
                 }
-                // all good — submit the form programmatically
-                $form.off('submit'); // unbind to avoid recursion
-                $form.submit();
+                // all good — submit the form via AJAX
+                var formData = $form.serialize();
+                $.ajax({
+                    url: $form.attr('action'),
+                    method: $form.attr('method'),
+                    data: formData,
+                    success: function (resp) {
+                        // If response contains the table, replace it
+                        var $newTable = $(resp).find('#employees-body');
+                        if ($newTable.length) {
+                            $('#employees-body').replaceWith($newTable);
+                        }
+                        // Show JS success message and refresh page
+                        var successMsg = 'Employees saved successfully.';
+                        var $alert = $('<div class="alert alert-success alert-dismissible fade show" role="alert">' + successMsg + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>');
+                        $form.prepend($alert);
+                        setTimeout(function () { location.reload(); }, 1200);
+                    },
+                    error: function () {
+                        alert('Failed to save employees.');
+                    }
+                });
             }).fail(function () {
                 alert('Could not validate skills at this time. Please try again.');
             });

@@ -26,40 +26,6 @@
     "DepartmentId": 3,
     "SkillID": 3,
     "Skill": "JavaScript"
-  },
-  {
-    "EmployerID": 6,
-    "EmployerName": "dadad",
-    "DepartmentId": 3,
-    "SkillID": 5,
-    "Skill": "SQL"
-  },
-  {
-    "EmployerID": 7,
-    "EmployerName": "dadad",
-    "DepartmentId": 3,
-    "SkillID": 5,
-    "Skill": "SQL"
-  },
-  {
-    "EmployerID": 8,
-    "EmployerName": "ppppp",
-    "DepartmentId": 3,
-    "SkillID": 6,
-    "Skill": "Negotiation"
-  },
-  {
-    "EmployerID": 9,
-    "EmployerName": "OOOO",
-    "DepartmentId": 4,
-    "SkillID": 9,
-    "Skill": "Design"
-  },
-  {
-    "EmployerID": 10,
-    "EmployerName": "QQQQQ",
-    "DepartmentId": 3,
-    "SkillID": 9,
-    "Skill": "Design"
   }
+  
 ]

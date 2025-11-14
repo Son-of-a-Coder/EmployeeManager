@@ -221,7 +221,11 @@ namespace EmployeeManager.Controllers
                 return View("Index", employees);
             }
 
-            return RedirectToAction(nameof(Index));
+            ViewData["Skills"] = _repo.Skills.Select(s => s.Name ?? string.Empty).ToList();
+            ViewData["Departments"] = _repo.Departments;
+            TempData["SuccessMessage"] = "Employees saved successfully.";
+            var model = _repo.Employees.Select(e => new Employee { Id = e.Id, FullName = e.FullName, DepartmentId = e.DepartmentId, Skill = e.Skill }).ToList();
+            return View("Index", model);
         }
     }
 }
