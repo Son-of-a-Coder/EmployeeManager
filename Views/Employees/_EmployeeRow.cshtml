@@ -1,0 +1,75 @@
+@using EmployeeManager.Models
+@model Employee
+
+@{
+    // index is provided via ViewData["index"] and may be an int or the placeholder string
+    var idx = ViewData["index"]?.ToString() ?? "0";
+    var originalPrefix = ViewData.TemplateInfo.HtmlFieldPrefix;
+    ViewData.TemplateInfo.HtmlFieldPrefix = $"employees[{idx}]";
+}
+
+<tr data-employee-row="true">
+    <td>
+        @Html.HiddenFor(m => m.Id)
+        @if (ViewData.ModelState[$"employees[{ViewData["index"]}].FullName"]?.Errors.Count > 0)
+        {
+            <input type="text" name="employees[@ViewData["index"]].FullName" class="form-control is-invalid" value="@Model.FullName" />
+            <div class="invalid-feedback d-block">@ViewData.ModelState[$"employees[{ViewData["index"]}].FullName"].Errors[0].ErrorMessage</div>
+        }
+        else
+        {
+            <div class="form-control-plaintext fullName">@Html.DisplayFor(m => m.FullName)</div>
+            @Html.HiddenFor(m => m.FullName)
+        }
+    </td>
+    <td>
+        @Html.HiddenFor(m => m.DepartmentId)
+        @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>();
+           var deptName = depts.FirstOrDefault(d => d.Id == Model.DepartmentId)?.Name ?? string.Empty; }
+        @if (ViewData.ModelState[$"employees[{ViewData["index"]}].DepartmentId"]?.Errors.Count > 0)
+        {
+            <select name="employees[@ViewData["index"]].DepartmentId" class="form-select is-invalid">
+                <option value="">-- select --</option>
+                @foreach (var d in depts)
+                {
+                    if (Model.DepartmentId == d.Id)
+                    {
+                        <option value="@d.Id" selected>@d.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@d.Id">@d.Name</option>
+                    }
+                }
+            </select>
+            <div class="invalid-feedback d-block">@ViewData.ModelState[$"employees[{ViewData["index"]}].DepartmentId"].Errors[0].ErrorMessage</div>
+        }
+        else
+        {
+            <div class="form-control-plaintext departmentName">@deptName</div>
+            @Html.HiddenFor(m => m.DepartmentId)
+        }
+    </td>
+    <td>
+        @Html.HiddenFor(m => m.Skill)
+        @if (ViewData.ModelState[$"employees[{ViewData["index"]}].Skill"]?.Errors.Count > 0)
+        {
+            <input type="text" name="employees[@ViewData["index"]}].Skill" class="form-control skill is-invalid" value="@Model.Skill" list="skills-list" />
+            <div class="invalid-feedback d-block">@ViewData.ModelState[$"employees[{ViewData["index"]}].Skill"].Errors[0].ErrorMessage</div>
+        }
+        else
+        {
+            <div class="form-control-plaintext skillValue">@Html.DisplayFor(m => m.Skill)</div>
+            @Html.HiddenFor(m => m.Skill)
+        }
+    </td>
+    <td>
+        <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="@Model.Id">Edit</button>
+        <button class="btn btn-sm btn-danger delete-btn" data-id="@Model.Id">Delete</button>
+    </td>
+</tr>
+
+@{
+    // restore original prefix to avoid affecting parent view
+    ViewData.TemplateInfo.HtmlFieldPrefix = originalPrefix;
+}

@@ -8,6 +8,8 @@ namespace DemoWebMvc
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            // Register JSON-backed data repository (loads Data/*.json)
+            builder.Services.AddSingleton<EmployeeManager.Services.DataRepository>();
 
             var app = builder.Build();
 
