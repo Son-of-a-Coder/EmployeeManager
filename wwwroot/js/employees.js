@@ -87,6 +87,16 @@ $(function () {
             var $list = $input.data('typeaheadList');
             if ($list && $list.is(':visible')) {
                 handleKey(e, $input, $list);
+                // Prevent form submit on Enter if suggestion list is open
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            // Prevent form submit on Enter in skill input if not selecting suggestion
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
             }
         });
 
@@ -113,6 +123,11 @@ $(function () {
                         var $it = $('<button type="button" class="list-group-item list-group-item-action"></button>').text(item);
                         $it.on('mousedown', function (ev) {
                             // use mousedown so value is set before blur
+                            $input.val(item).trigger('input');
+                            hideList($list);
+                            ev.preventDefault();
+                        });
+                        $it.on('click', function (ev) {
                             $input.val(item).trigger('input');
                             hideList($list);
                             ev.preventDefault();
@@ -428,7 +443,19 @@ $(function () {
                     }
                 });
                 if (!ok) {
-                    alert('Please select an existing skill from suggestions.');
+                    // Show inline error for each invalid skill field
+                    $('.skill').each(function () {
+                        var v = $(this).val();
+                        if (!v || !String(v).trim() || allowed.indexOf(String(v).toLowerCase()) === -1) {
+                            $(this).addClass('is-invalid');
+                            if ($(this).next('.invalid-feedback').length === 0) {
+                                $(this).after('<div class="invalid-feedback d-block">Please select an existing skill from suggestions.</div>');
+                            }
+                        } else {
+                            $(this).removeClass('is-invalid');
+                            $(this).next('.invalid-feedback').remove();
+                        }
+                    });
                     return;
                 }
                 // all good — submit the form programmatically

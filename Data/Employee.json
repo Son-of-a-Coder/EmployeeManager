@@ -21,13 +21,6 @@
     "Skill": "JavaScript"
   },
   {
-    "EmployerID": 4,
-    "EmployerName": "aaaaaaaa",
-    "DepartmentId": 2,
-    "SkillID": 2,
-    "Skill": "ASP.NET Core"
-  },
-  {
     "EmployerID": 5,
     "EmployerName": "Ivan Ivi\u0107",
     "DepartmentId": 3,
@@ -36,65 +29,37 @@
   },
   {
     "EmployerID": 6,
-    "EmployerName": "adada",
+    "EmployerName": "dadad",
     "DepartmentId": 3,
+    "SkillID": 5,
+    "Skill": "SQL"
+  },
+  {
+    "EmployerID": 7,
+    "EmployerName": "dadad",
+    "DepartmentId": 3,
+    "SkillID": 5,
+    "Skill": "SQL"
+  },
+  {
+    "EmployerID": 8,
+    "EmployerName": "ppppp",
+    "DepartmentId": 3,
+    "SkillID": 6,
+    "Skill": "Negotiation"
+  },
+  {
+    "EmployerID": 9,
+    "EmployerName": "OOOO",
+    "DepartmentId": 4,
     "SkillID": 9,
     "Skill": "Design"
   },
   {
-    "EmployerID": 7,
-    "EmployerName": "dddddd",
-    "DepartmentId": 4,
-    "SkillID": 2,
-    "Skill": "ASP.NET Core"
-  },
-  {
-    "EmployerID": 8,
-    "EmployerName": "dadada",
-    "DepartmentId": 4,
-    "SkillID": 10,
-    "Skill": "Testing"
-  },
-  {
-    "EmployerID": 9,
-    "EmployerName": "kkkkkkkk",
-    "DepartmentId": 4,
-    "SkillID": 10,
-    "Skill": "Testing"
-  },
-  {
     "EmployerID": 10,
-    "EmployerName": "uuuuu",
-    "DepartmentId": 4,
-    "SkillID": 5,
-    "Skill": "SQL"
-  },
-  {
-    "EmployerID": 11,
-    "EmployerName": "deeererere",
-    "DepartmentId": 4,
-    "SkillID": 10,
-    "Skill": "Testing"
-  },
-  {
-    "EmployerID": 12,
-    "EmployerName": "deeererere",
-    "DepartmentId": 4,
-    "SkillID": 10,
-    "Skill": "Testing"
-  },
-  {
-    "EmployerID": 13,
-    "EmployerName": "popopopoop",
+    "EmployerName": "QQQQQ",
     "DepartmentId": 3,
-    "SkillID": 5,
-    "Skill": "SQL"
-  },
-  {
-    "EmployerID": 14,
-    "EmployerName": "popopopoop",
-    "DepartmentId": 3,
-    "SkillID": 5,
-    "Skill": "SQL"
+    "SkillID": 9,
+    "Skill": "Design"
   }
 ]
