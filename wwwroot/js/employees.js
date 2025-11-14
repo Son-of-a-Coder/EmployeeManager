@@ -1,15 +1,15 @@
 $(function () {
     // safe globals
-    var allowedSkills = window.allowedSkills || [];
-    window.allowedSkills = allowedSkills;
+    let allowedSkills = globalThis.allowedSkills || [];
+    globalThis.allowedSkills = allowedSkills;
 
     function refreshAllSkills() {
         // return the jqXHR so callers can wait for completion
         return $.get('/Employees/GetAllSkills').done(function (data) {
-            window.allowedSkills = allowedSkills = data || [];
+            globalThis.allowedSkills = allowedSkills = data || [];
         }).fail(function () {
             // keep previous value if request fails
-            window.allowedSkills = allowedSkills = window.allowedSkills || [];
+            globalThis.allowedSkills = allowedSkills = globalThis.allowedSkills || [];
         });
     }
 
@@ -18,11 +18,11 @@ $(function () {
 
     // Typeahead implementation for `.skill` inputs (fetches suggestions from server)
     function bindSkillAutocomplete() {
-        var activeRequest = null;
-        var debounceTimer = null;
+        let activeRequest = null;
+        let debounceTimer = null;
 
         function positionList($list, $input) {
-            var rect = $input[0].getBoundingClientRect();
+            const rect = $input[0].getBoundingClientRect();
             $list.css({
                 position: 'absolute',
                 left: rect.left + window.pageXOffset + 'px',
@@ -37,14 +37,14 @@ $(function () {
         }
 
         function hideList($list) {
-            if ($list) $list.hide().empty();
+            $list?.hide().empty();
         }
 
         // handle keyboard navigation inside suggestion list
         function handleKey(e, $input, $list) {
-            var $items = $list.find('.list-group-item');
+            const $items = $list.find('.list-group-item');
             if (!$items.length) return;
-            var idx = $items.index($items.filter('.active'));
+            let idx = $items.index($items.filter('.active'));
             if (e.key === 'ArrowDown') {
                 idx = Math.min($items.length - 1, idx + 1);
                 $items.removeClass('active').eq(idx).addClass('active');
@@ -54,7 +54,7 @@ $(function () {
                 $items.removeClass('active').eq(idx).addClass('active');
                 e.preventDefault();
             } else if (e.key === 'Enter') {
-                var $sel = $items.filter('.active').first();
+                const $sel = $items.filter('.active').first();
                 if ($sel.length) {
                     $input.val($sel.text()).trigger('input');
                     hideList($list);
@@ -67,8 +67,8 @@ $(function () {
 
         // attach handlers via delegation so dynamically added rows work
         $(document).on('focus', '.skill', function () {
-            var $input = $(this);
-            var $list = $input.data('typeaheadList');
+            const $input = $(this);
+            let $list = $input.data('typeaheadList');
             if (!$list) {
                 $list = createList();
                 $input.data('typeaheadList', $list);
@@ -77,14 +77,14 @@ $(function () {
         });
 
         $(document).on('blur', '.skill', function () {
-            var $input = $(this);
-            var $list = $input.data('typeaheadList');
+            const $input = $(this);
+            const $list = $input.data('typeaheadList');
             setTimeout(function () { hideList($list); }, 150);
         });
 
         $(document).on('keydown', '.skill', function (e) {
-            var $input = $(this);
-            var $list = $input.data('typeaheadList');
+            const $input = $(this);
+            const $list = $input.data('typeaheadList');
             if ($list && $list.is(':visible')) {
                 handleKey(e, $input, $list);
                 // Prevent form submit on Enter if suggestion list is open
@@ -101,9 +101,9 @@ $(function () {
         });
 
         $(document).on('input', '.skill', function () {
-            var $input = $(this);
-            var q = String($input.val() || '').trim();
-            var $list = $input.data('typeaheadList');
+            const $input = $(this);
+            const q = String($input.val() || '').trim();
+            let $list = $input.data('typeaheadList');
             if (!$list) {
                 $list = createList();
                 $input.data('typeaheadList', $list);
@@ -145,9 +145,9 @@ $(function () {
         // reposition suggestion box on window resize/scroll
         $(window).on('resize scroll', function () {
             $('.skill').each(function () {
-                var $input = $(this);
-                var $list = $input.data('typeaheadList');
-                if ($list && $list.is(':visible')) positionList($list, $input);
+                const $input = $(this);
+                const $list = $input.data('typeaheadList');
+                if ($list?.is(':visible')) positionList($list, $input);
             });
         });
     }
@@ -155,7 +155,7 @@ $(function () {
         // Utility: reindex rows so model binding uses sequential indexes
         function reindexRows() {
             $('#employees-body tr').each(function (i) {
-                var $tr = $(this);
+                const $tr = $(this);
                 // hidden id
                 $tr.find('input[type="hidden"]').attr('name', 'employees[' + i + '].Id');
                 $tr.find('input[name$=".FullName"]').attr('name', 'employees[' + i + '].FullName').attr('id', 'employees_' + i + '__FullName');
@@ -175,12 +175,12 @@ $(function () {
         // Delete handler: if persisted id > 0, send request to server, otherwise just remove row
         $(document).on('click', '.delete-btn', function (e) {
             e.preventDefault();
-            var $btn = $(this);
-            var $row = $btn.closest('tr');
-            var id = parseInt($btn.attr('data-id') || '0');
+            const $btn = $(this);
+            const $row = $btn.closest('tr');
+            const id = Number.parseInt($btn.attr('data-id') || '0');
             if (id > 0) {
                 if (!confirm('Are you sure you want to delete this record?')) return;
-                var token = $('input[name="__RequestVerificationToken"]').val();
+                const token = $('input[name="__RequestVerificationToken"]').val();
                 $.post({
                     url: '/Employees/Delete',
                     data: { id: id, __RequestVerificationToken: token },
@@ -203,10 +203,10 @@ $(function () {
         var nextIndex = $('#employees-body tr').length;
         $('#add-employee').on('click', function (e) {
             e.preventDefault();
-            var idx = nextIndex++;
-            var tpl = $('#new-row-template').html();
-            tpl = tpl.replace(/__INDEX__/g, idx);
-            var $row = $('<tbody>').append(tpl).find('tr').first();
+            const idx = nextIndex++;
+            let tpl = $('#new-row-template').html();
+            tpl = tpl.replaceAll('__INDEX__', idx);
+            const $row = $('<tbody>').append(tpl).find('tr').first();
             $row.find('[name="employees[' + idx + '].FullName"]').val('');
             $row.find('[name="employees[' + idx + '].DepartmentId"]').val('');
             $row.find('[name="employees[' + idx + '].Skill"]').val('');
@@ -216,9 +216,9 @@ $(function () {
 
             // Listen for changes to persist new row when all fields are filled
             $row.on('change blur', 'input, select', function () {
-                var fullName = $row.find('[name$=".FullName"]').val();
-                var dept = $row.find('[name$=".DepartmentId"]').val();
-                var skill = $row.find('[name$=".Skill"]').val();
+                const fullName = $row.find('[name$=".FullName"]').val();
+                const dept = $row.find('[name$=".DepartmentId"]').val();
+                const skill = $row.find('[name$=".Skill"]').val();
                 if (!fullName || !String(fullName).trim()) return;
                 if (!dept || !String(dept).trim()) return;
                 if (!skill || !String(skill).trim()) return;

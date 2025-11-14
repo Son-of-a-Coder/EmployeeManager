@@ -51,9 +51,10 @@ namespace EmployeeManager.Controllers
             {
                 _repo.SaveEmployees();
             }
-            catch
+            catch (Exception ex)
             {
                 // persist failure shouldn't crash the API; return failure to client
+                // Optionally log the exception: Console.Error.WriteLine(ex);
                 return Json(new { success = false, message = "Failed to persist data" });
             }
 
