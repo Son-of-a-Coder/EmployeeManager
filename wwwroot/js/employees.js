@@ -69,9 +69,6 @@ $(function () {
         });
     }
 
-    // Fix: Initialize $list before usage (typeahead/autocomplete)
-    var $list = $('#employee-list'); // Adjust selector if needed
-
     function refreshAllSkills() {
         // Always return a promise, even if AJAX fails
         var jqXHR = $.get('/Employees/GetAllSkills')
@@ -90,8 +87,6 @@ $(function () {
         return jqXHR;
     }
     refreshAllSkills();
-    let activeRequest = null;
-    let debounceTimer = null;
         // Modal submit now performs Update via AJAX (modal is only used for editing persisted rows)
         $('#addEmployeeForm').off('submit').on('submit', function (e) {
             e.preventDefault();
