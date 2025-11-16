@@ -17,7 +17,7 @@
     "EmployerID": 5,
     "EmployerName": "Ivan Ivi\u0107",
     "DepartmentId": 3,
-    "SkillID": 9,
-    "Skill": "Design"
+    "SkillID": 2,
+    "Skill": "ASP.NET Core"
   }
 ]
