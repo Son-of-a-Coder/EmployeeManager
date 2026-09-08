@@ -1,0 +1,22 @@
+[
+  {
+    "DepartmentID": 1,
+    "DepartmentName": "Ljudski potencijali",
+    "Location": "Zagreb"
+  },
+  {
+    "DepartmentID": 2,
+    "DepartmentName": "Uprava",
+    "Location": "Zagreb"
+  },
+  {
+    "DepartmentID": 3,
+    "DepartmentName": "Marketing",
+    "Location": "Zadar"
+  },
+  {
+    "DepartmentID": 4,
+    "DepartmentName": "Prodaja",
+    "Location": "Bjelovar"
+  }
+]

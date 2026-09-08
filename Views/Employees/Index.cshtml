@@ -1,0 +1,133 @@
+@using EmployeeManager.Models
+@model List<EmployeeManager.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<h2>Employees</h2>
+
+<form asp-action="SaveAll" asp-controller="Employees" method="post">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+    @Html.AntiForgeryToken()
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Full Name</th>
+                    <th>Department</th>
+                    <th>Skill</th>
+                    <th style="width:120px">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="employees-body">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    var v = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData) { ["index"] = i.ToString() };
+                    @await Html.PartialAsync("_EmployeeRow", Model[i], v)
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- jQuery UI Autocomplete used instead of datalist -->
+
+    <div class="mb-3">
+        <button id="add-employee" class="btn btn-outline-primary">+ Add Employee</button>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Save All</button>
+    </div>
+</form>
+
+<!-- Server-rendered template for new row (kept as raw HTML inside a script/template so the browser doesn't reparent table row markup) -->
+<script id="new-row-template" type="text/html">
+    <tr>
+        <td>
+            <input type="hidden" name="employees[__INDEX__].Id" value="0" />
+            <input type="text" name="employees[__INDEX__].FullName" class="form-control" />
+        </td>
+        <td>
+            <select name="employees[__INDEX__].DepartmentId" class="form-select">
+                <option value="">-- select --</option>
+                @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>(); }
+                @foreach (var d in depts)
+                {
+                    <option value="@d.Id">@d.Name</option>
+                }
+            </select>
+        </td>
+        <td>
+            <input type="text" name="employees[__INDEX__].Skill" class="form-control skill" list="skills-list" />
+        </td>
+        <td>
+            <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="0">Edit</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="0">Delete</button>
+        </td>
+    </tr>
+</script>
+
+@* Shared datalist for skills; inputs reference this list via `list="skills-list"` *@
+<datalist id="skills-list">
+    @{ var skills = ViewData["Skills"] as IEnumerable<string> ?? Enumerable.Empty<string>(); }
+    @foreach (var s in skills)
+    {
+        <option value="@s"></option>
+    }
+</datalist>
+
+<!-- Add Employee Modal -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEmployeeForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEmployeeModalLabel">Add Employee</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalFullName" class="form-label">Full Name</label>
+                        <input type="text" id="modalFullName" class="form-control" />
+                        <div class="invalid-feedback">Full Name is required.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalDepartment" class="form-label">Department</label>
+                        <select id="modalDepartment" class="form-select">
+                            <option value="">-- select --</option>
+                            @{ var depts = ViewData["Departments"] as IEnumerable<EmployeeManager.Services.DepartmentItem> ?? Enumerable.Empty<EmployeeManager.Services.DepartmentItem>(); }
+                            @foreach (var d in depts)
+                            {
+                                <option value="@d.Id">@d.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalSkill" class="form-label">Skill</label>
+                        <input id="modalSkill" class="form-control skill" list="skills-list" />
+                        <div class="invalid-feedback">Please enter a skill (existing suggestions shown).</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- jQuery UI (Autocomplete) via CDN; falls back to custom typeahead if unavailable -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-xNjb53/rY+Y0vY6b0a0a0mYQv0vGqZ1s4f2b5FQ5fVg=" crossorigin="anonymous"></script>
+    <script src="~/js/employees.js" asp-append-version="true"></script>
+}

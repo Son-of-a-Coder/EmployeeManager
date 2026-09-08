@@ -1,0 +1,21 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+# Ignore all bin and obj folders (case-insensitive)
+[Bb]in/
+[Oo]bj/
+
+# Ignore backup files
+*.bak
+
+# Visual Studio files
+/.vs/
+/.vs/DemoWebMvc/CopilotIndices/
+/.vs/DemoWebMvc/DesignTimeBuild
+/.vs/DemoWebMvc/FileContentIndex
+/.vs/DemoWebMvc/v17
+/.vs/EmployeeManager/FileContentIndex
+/.vs/EmployeeManager/v17
+/.vs/ProjectEvaluation
+/.vs/DemoWebMvc/config
