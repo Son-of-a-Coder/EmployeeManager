@@ -64,8 +64,12 @@
         }
     </td>
     <td>
-        <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="@Model.Id">Edit</button>
-        <button class="btn btn-sm btn-danger delete-btn" data-id="@Model.Id">Delete</button>
+        <button class="btn btn-sm btn-secondary edit-btn me-1" data-id="@Model.Id" title="Edit">
+            <img src="/icons/edit.svg" alt="Edit" width="16" height="16" />
+        </button>
+        <button class="btn btn-sm btn-danger delete-btn" data-id="@Model.Id" title="Delete">
+            <img src="/icons/delete.svg" alt="Delete" width="16" height="16" />
+        </button>
     </td>
 </tr>
 

@@ -1,12 +1,5 @@
 [
   {
-    "EmployerID": 1,
-    "EmployerName": "Ivan Ivi\u0107",
-    "DepartmentId": 1,
-    "SkillID": 2,
-    "Skill": "ASP.NET Core"
-  },
-  {
     "EmployerID": 2,
     "EmployerName": "Ana Ani\u0107",
     "DepartmentId": 4,
@@ -24,8 +17,7 @@
     "EmployerID": 5,
     "EmployerName": "Ivan Ivi\u0107",
     "DepartmentId": 3,
-    "SkillID": 3,
-    "Skill": "JavaScript"
+    "SkillID": 2,
+    "Skill": "ASP.NET Core"
   }
-  
 ]
